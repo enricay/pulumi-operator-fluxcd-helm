@@ -5,7 +5,7 @@ metadata:
   namespace: pulumi-kubernetes-operator
 spec:
   stack: dev
-  projectRepo: https://github.com/your-repo/pulumi-examples.git  # Replace with your actual repo
+  projectRepo: https://github.com/enricay/pulumi-operator-fluxcd-helm.git
   repoDir: examples/simple-configmap
   branch: main
   envRefs:
