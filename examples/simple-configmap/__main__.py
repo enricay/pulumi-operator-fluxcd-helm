@@ -1,18 +1,27 @@
 import pulumi
-import pulumi_kubernetes as k8s
+from pulumi_kubernetes.core.v1 import ConfigMap, Namespace
 
 # Create a simple ConfigMap
-config_map = k8s.core.v1.ConfigMap(
+config_map = ConfigMap(
     "sample-configmap",
-    metadata=k8s.meta.v1.ObjectMetaArgs(
-        name="sample-config",
-        namespace="default",
-    ),
+    metadata={
+        "name": "sample-config",
+        "namespace": "default",
+    },
     data={
         "message": "Hello from Pulumi Kubernetes Operator!",
         "environment": "staging",
         "created-by": "pulumi-operator",
-        "version": "1.0.0",
+        "version": "1.0.1",
+        "test-time": "2025-08-04T21:30:00Z"
+    }
+)
+
+# Create Namespace
+namespace = Namespace(
+    "sample-ns",
+    metadata={
+        "name": "default",
     }
 )
 

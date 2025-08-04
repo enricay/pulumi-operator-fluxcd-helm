@@ -1,0 +1,22 @@
+apiVersion: pulumi.com/v1
+kind: Stack
+metadata:
+  name: simple-configmap-test-v2
+  namespace: pulumi-kubernetes-operator
+spec:
+  stack: dev
+  projectRepo: https://github.com/enricay/pulumi-operator-fluxcd-helm.git
+  repoDir: examples/simple-configmap
+  branch: main
+  envRefs:
+    PULUMI_ACCESS_TOKEN:
+      type: Secret
+      secret:
+        name: pulumi-api-secret
+        key: accessToken
+  destroyOnFinalize: true
+  continueResyncOnCommitMatch: false
+  config:
+    # Use a smaller, specific Pulumi image
+    workspace:
+      image: pulumi/pulumi:3.135.1-python
