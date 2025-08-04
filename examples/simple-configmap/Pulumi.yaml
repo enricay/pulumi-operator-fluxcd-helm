@@ -1,0 +1,9 @@
+name: simple-configmap
+runtime: python
+description: A simple Pulumi program that creates a Kubernetes ConfigMap
+
+template:
+  config:
+    pulumi:template:
+      description: A simple Pulumi program that creates a Kubernetes ConfigMap
+      important: false

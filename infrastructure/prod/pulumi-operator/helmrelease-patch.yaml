@@ -1,0 +1,30 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: pulumi-kubernetes-operator
+  namespace: pulumi-kubernetes-operator
+spec:
+  values:
+    # Production environment - only override what's necessary
+    # Resource limits for production environment
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+    
+    # Production environment labels
+    podLabels:
+      environment: prod
+
+    # Production-specific resource settings
+    nodeSelector:
+      node-type: operator
+    
+    tolerations:
+      - key: "operator"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"

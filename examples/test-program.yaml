@@ -1,0 +1,47 @@
+apiVersion: pulumi.com/v1
+kind: Program
+metadata:
+  name: simple-configmap-program
+  namespace: pulumi-kubernetes-operator
+spec:
+  program:
+    __main__.py: |
+      import pulumi
+      import pulumi_kubernetes as k8s
+
+      # Create a simple ConfigMap
+      config_map = k8s.core.v1.ConfigMap(
+          "sample-configmap",
+          metadata=k8s.meta.v1.ObjectMetaArgs(
+              name="operator-test-config",
+              namespace="default",
+          ),
+          data={
+              "message": "Hello from Pulumi Kubernetes Operator!",
+              "environment": "staging", 
+              "created-by": "pulumi-operator",
+              "version": "1.0.0",
+              "test-time": "2025-08-04T21:00:00Z"
+          }
+      )
+
+      # Export the ConfigMap name and namespace
+      pulumi.export("configMapName", config_map.metadata["name"])
+      pulumi.export("configMapNamespace", config_map.metadata["namespace"])
+    
+    Pulumi.yaml: |
+      name: simple-configmap-test
+      runtime: python
+      description: A simple test program for Pulumi Kubernetes Operator
+    
+    requirements.txt: |
+      pulumi>=3.0.0,<4.0.0
+      pulumi-kubernetes>=4.0.0,<5.0.0
+  
+  # Environment variables including the Pulumi access token
+  envs:
+    PULUMI_ACCESS_TOKEN:
+      type: Secret
+      secret:
+        name: pulumi-api-secret
+        key: accessToken
