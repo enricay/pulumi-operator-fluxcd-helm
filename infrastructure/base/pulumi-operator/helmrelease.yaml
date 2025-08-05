@@ -1,19 +1,62 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: pulumi-kubernetes-operator
-  namespace: pulumi-kubernetes-operator
+  name: pulumi-operator
+  namespace: pulumi-operator
 spec:
   interval: 5m0s
   chart:
     spec:
       chart: pulumi-kubernetes-operator
-      version: "2.0.0"
+      version: "2.1.0"
       sourceRef:
         kind: HelmRepository
-        name: pulumi-kubernetes-operator
-        namespace: pulumi-kubernetes-operator
+        name: pulumi-operator
+        namespace: pulumi-operator
       interval: 5m0s
   values:
-    # Use chart defaults - minimal configuration
-    # All values can be overridden in environment overlays
+    # Configure the operator controller to prefer stable nodes
+    nodeSelector:
+      karpenter.sh/capacity-type: "on-demand"
+    tolerations: []
+    
+    # Configure workspace pods for adequate disk space and resources
+    workspaceTemplate:
+      spec:
+        podTemplate:
+          spec:
+            containers:
+            - name: pulumi
+              resources:
+                requests:
+                  memory: "2Gi"
+                  cpu: "1000m"
+                  ephemeral-storage: "15Gi"
+                limits:
+                  memory: "4Gi"
+                  cpu: "2000m"
+                  ephemeral-storage: "25Gi"
+            nodeSelector:
+              # Prefer larger instances with more disk space
+              karpenter.k8s.aws/instance-size: "large,xlarge,2xlarge"
+              # Prefer newer generation instances
+              karpenter.k8s.aws/instance-generation: "5,6"
+            # Avoid the previously problematic node
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                    - ip-10-0-2-231.eu-west-1.compute.internal
+                  - key: karpenter.k8s.aws/instance-memory
+                    operator: Gt
+                    values:
+                    - "6144"  # At least 6GB RAM
+    
+    # Configure the operator controller with correct advertised address
+    controller:
+      advertisedAddress: "pulumi-operator-pulumi-kubernetes-operator.pulumi-operator.svc.cluster.local:80"
+      args:
+        - "--program-fs-adv-addr=pulumi-operator-pulumi-kubernetes-operator.pulumi-operator.svc.cluster.local:80"
